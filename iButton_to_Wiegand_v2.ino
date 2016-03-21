@@ -105,7 +105,7 @@ void vytvorTelo()
     }
   }
   
-  #ifdef DEBUG
+  #if DEBUG == 1
   Serial.println("kod ");
   Serial.println(paket >> 1, BIN);
   Serial.println(paket >> 1, DEC);
@@ -120,7 +120,7 @@ void vytvorTelo()
       parita += bitRead( paketParita, y + 12 * i );
     }
     
-    #ifdef DEBUG
+    #if DEBUG == 1
     Serial.print("i=");
     Serial.print(i);
     Serial.print(" parita=");
@@ -137,7 +137,7 @@ void vytvorTelo()
     paket |= (( uint32_t )(i ^ !( parita & 1)) << ( i * WIEGAND - 1));
   }
   
-  #ifdef DEBUG
+  #if DEBUG == 1
   Serial.println("paket ");
   Serial.println(paket, BIN);
   Serial.println(paket, DEC);
@@ -148,11 +148,15 @@ void vytvorTelo()
 void sendCode(uint8_t vystup)
 {
   vystup = vystup * 2;
+  
+  #if DEBUG == 1
   Serial.println("Wiegand");
+  #endif
+  
   for ( short i = ( WIEGAND - 1 ); i >= 0; i-- ) {
     if ( bitRead( paket, i ) == 1 ) {
       
-      #ifdef DEBUG
+      #if DEBUG == 1
       Serial.print( 1 );
       #endif
       
@@ -162,7 +166,7 @@ void sendCode(uint8_t vystup)
     }
     else if ( bitRead( paket, i ) == 0 ) {
       
-      #ifdef DEBUG
+      #if DEBUG == 1
       Serial.print( 0 );
       #endif
       
@@ -226,7 +230,7 @@ void loop()
     keyStatus = "ok";
     dsButton[ i ].reset();
     
-    #ifdef DEBUG
+    #if DEBUG == 1
     Serial.print( "Citacka " );
     Serial.print( i + 1 );
     Serial.print( " = ");
@@ -244,7 +248,7 @@ void loop()
     keyStatus =  "";
     
     // nastavenie oneskorenie kvoli nechcenemu opakovanemu dotyku iButtona
-    delay( 100 );
+    delay( 1000 );
   }
     
   //delay(1000);
