@@ -104,11 +104,13 @@ void vytvorTelo()
       paket <<= 1;
     }
   }
-
+  
+  #ifdef DEBUG
   Serial.println("kod ");
   Serial.println(paket >> 1, BIN);
   Serial.println(paket >> 1, DEC);
   Serial.println(paket >> 1, HEX);
+  #endif
 
   uint32_t paketParita = paket >> 1;
 
@@ -117,6 +119,8 @@ void vytvorTelo()
     for ( uint8_t y = 0; y < 12; y++ ) {
       parita += bitRead( paketParita, y + 12 * i );
     }
+    
+    #ifdef DEBUG
     Serial.print("i=");
     Serial.print(i);
     Serial.print(" parita=");
@@ -128,14 +132,17 @@ void vytvorTelo()
     Serial.print(" 1 << ( i * 26)=");
     Serial.print((uint32_t)1 << ( i * WIEGAND - 1));
     Serial.println();
+    #endif
 
     paket |= (( uint32_t )(i ^ !( parita & 1)) << ( i * WIEGAND - 1));
   }
-
+  
+  #ifdef DEBUG
   Serial.println("paket ");
   Serial.println(paket, BIN);
   Serial.println(paket, DEC);
   Serial.println(paket, HEX);
+  #endif
 }
 
 void sendCode(uint8_t vystup)
@@ -144,13 +151,21 @@ void sendCode(uint8_t vystup)
   Serial.println("Wiegand");
   for ( short i = ( WIEGAND - 1 ); i >= 0; i-- ) {
     if ( bitRead( paket, i ) == 1 ) {
+      
+      #ifdef DEBUG
       Serial.print( 1 );
+      #endif
+      
       digitalWrite( W_VYSTUPY[ vystup + 1 ], LOW );
       delayMicroseconds( 34 );
       digitalWrite( W_VYSTUPY[ vystup + 1 ], HIGH);
     }
     else if ( bitRead( paket, i ) == 0 ) {
+      
+      #ifdef DEBUG
       Serial.print( 0 );
+      #endif
+      
       digitalWrite( W_VYSTUPY[ vystup ], LOW);
       delayMicroseconds( 35 );
       digitalWrite( W_VYSTUPY[ vystup ], HIGH);
@@ -211,6 +226,7 @@ void loop()
     keyStatus = "ok";
     dsButton[ i ].reset();
     
+    #ifdef DEBUG
     Serial.print( "Citacka " );
     Serial.print( i + 1 );
     Serial.print( " = ");
@@ -219,6 +235,7 @@ void loop()
       Serial.print( ":" );
     }
     Serial.println( "" ); 
+    #endif
     
     vytvorTelo();
 
@@ -226,8 +243,8 @@ void loop()
     paket = 0;
     keyStatus =  "";
     
-    //delay(1000);
-    
+    // nastavenie oneskorenie kvoli nechcenemu opakovanemu dotyku iButtona
+    delay( 100 );
   }
     
   //delay(1000);
