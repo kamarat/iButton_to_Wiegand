@@ -22,14 +22,14 @@
 * D  12 - kontakt TM citacky 3 iButton
 * D  13 - kontakt TM citacky 4 iButton
 *
-* D   2 - výstup Wiegand 1 DATA0
-* D   3 - výstup Wiegand 1 DATA1
-* D   4 - výstup Wiegand 2 DATA0
-* D   5 - výstup Wiegand 2 DATA1
-* D   6 - výstup Wiegand 3 DATA0
-* D   7 - výstup Wiegand 3 DATA1
-* D   8 - výstup Wiegand 4 DATA0
-* D   9 - výstup Wiegand 4 DATA1
+* D   2 - vystup Wiegand 1 DATA0
+* D   3 - vystup Wiegand 1 DATA1
+* D   4 - vystup Wiegand 2 DATA0
+* D   5 - vystup Wiegand 2 DATA1
+* D   6 - vystup Wiegand 3 DATA0
+* D   7 - vystup Wiegand 3 DATA1
+* D   8 - vystup Wiegand 4 DATA0
+* D   9 - vystup Wiegand 4 DATA1
 *
 * Rezistor 2k2 - medzi D10 a 5V
 * Rezistor 2k2 - medzi D11 a 5V
@@ -145,7 +145,7 @@ void vytvorTelo()
   #endif
 }
 
-void sendCode(uint8_t vystup)
+void posliKod(uint8_t vystup)
 {
   vystup = vystup * 2;
   
@@ -243,7 +243,7 @@ void loop()
     
     vytvorTelo();
 
-    sendCode(i);
+    posliKod(i);
     paket = 0;
     keyStatus =  "";
     
