@@ -6,9 +6,10 @@
  * Program nacita ID z iButtona a vytvori signal v protokole Wiegand
  *
  * @author: kamarat
- * @date:   marec 2016 - januar 2017
+ * @date:   marec 2016 - marec 2017
  * 
- * @version: [2.0.0] - marec 2017
+ * @version: [2.1.0] - 2017-03-24
+ * @version: [2.0.0] - 2017-03
  *
  * kamarat (cleft) 2016 - 2017
  *
