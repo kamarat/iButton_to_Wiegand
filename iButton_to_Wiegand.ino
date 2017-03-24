@@ -89,7 +89,12 @@ uint8_t addr[ 8 ] = {0};  // adresa + identifikator zariadenia - 8 bajtove pole
 uint32_t paket = 0;       // vystupny paket s Wiegand protokolom
 uint8_t citacka;          // aktivna citacka
 
-String keyStatus = "";
+enum vysledkyNacitania {
+  OK = 0,
+  CRC_INVALID,
+  NOT_DS1990A,
+  NO_IBUTTON
+} vysledokNacitania;
 
 /*== INICIALIZACIA ==
  *===================
@@ -121,22 +126,23 @@ void loop()
     // address and true is returned. If no more devices are found, false is returned. 
     if ( !dsButton[ citacka ].search( addr )) {
       dsButton[ citacka ].reset_search();  // Begin a new search. The next use of search will begin at the first device.
-      keyStatus = "No iButton";
+      vysledokNacitania = NO_IBUTTON;
       continue;
     }
     
     // Compute a CRC check on an array of data.
     if ( OneWire::crc8( addr, 7 ) != addr[ 7 ]) {
-      keyStatus = "CRC invalid";
+      vysledokNacitania = CRC_INVALID;
       continue;
     }
     
     if ( addr[ 0 ] != 0x01 ) {
-      keyStatus = "not DS1990A";
+      //keyStatus = "not DS1990A";
+      vysledokNacitania = NOT_DS1990A;
       continue;
     }
     
-    keyStatus = "ok";
+    vysledokNacitania = OK;
     dsButton[ citacka ].reset();
     
     #if DEBUG == 1
@@ -154,7 +160,7 @@ void loop()
 
     posliKod( &paket, citacka );
     paket = 0;
-    keyStatus =  "";
+    //keyStatus =  "";
     
     // Nastavenie oneskorenie kvoli nechcenemu opakovanemu dotyku iButtona
     delay( 800 );
