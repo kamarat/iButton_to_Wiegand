@@ -184,17 +184,17 @@ void vytvorTelo( uint32_t * paket, const uint8_t * addr )
   
   // Uvolnenie 0. bitu pre ulozenie parity
   *paket <<= 1;
-  
+
   // Spocitanie parity pre masku 1111111111110
-  // Zapise na 0. bit 1 ak je neparna parita
-  *paket = *paket | ( countParity( *paket & 0x00001FFE ) & 1 );
+  // Neparny paritny bit je nastaveny na 1, ak je pocet jednotiek v datovom slove parny
+  *paket = *paket | ( ~countParity( *paket & 0x00001FFE ) & 1 );
   
   // Spocitanie parity pre masku 01111111111110000000000000
-  // Zapise na 25. bit 1 ak je parna parita
-  *paket = *paket | (( uint32_t )( ~countParity( *paket & 0x01FFE000 ) & 1 ) << 25 );
+  // Parny paritny bit je nastaveny na 1, ak je pocet jednotiek v datovom slove neparny
+  *paket = *paket | (( uint32_t )( countParity( *paket & 0x01FFE000 ) & 1 ) << 25 );
   
   #if DEBUG == 1
-    Serial.println( F( "PAKET: " ));
+    Serial.println( F( "PAKET S PARITOU: " ));
     Serial.println( *paket, BIN );
     Serial.println( *paket, DEC );
     Serial.println( *paket, HEX );
