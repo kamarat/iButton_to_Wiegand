@@ -45,6 +45,7 @@
  *=======================
  */
 #include <OneWire.h>
+#include "Wiegand.h"
 
 /*== GLOBALNE PREMENNE ==
  *=======================
@@ -55,58 +56,58 @@
 
 /*== Deklaracia konstant ==
  */
-const uint8_t WIEGAND = 26;       // nastavenie protokolu
-const uint8_t POCET_CITACIEK = 2;
+const uint8_t POCET_SLOTOV = 4;
 
-// pripojenie citaciek na digitalne piny
-const uint8_t CITACKA1 = 10;
-const uint8_t CITACKA2 = 11;
-const uint8_t CITACKA3 = 12;
-const uint8_t CITACKA4 = 13;
-const uint8_t CITACKY[] = { CITACKA1, CITACKA2, CITACKA3, CITACKA4 };
-
-// zapojenie Wiegand vystupov
-const uint8_t W1_DATA0 = 2;
-const uint8_t W1_DATA1 = 3;
-const uint8_t W2_DATA0 = 4;
-const uint8_t W2_DATA1 = 5;
-const uint8_t W3_DATA0 = 6;
-const uint8_t W3_DATA1 = 7;
-const uint8_t W4_DATA0 = 8;
-const uint8_t W4_DATA1 = 9;
-const uint8_t W_VYSTUPY[] = { W1_DATA0, W1_DATA1, W2_DATA0, W2_DATA1, W3_DATA0, W3_DATA1, W4_DATA0, W4_DATA1 };
+// citacka, D0, D1, protokol
+const struct Slot slot[] {
+  { 10, { 2, 3 }, WIEGAND26 },
+  { 11, { 4, 5 }, WIEGAND26 },
+  { 12, { 6, 7 }, WIEGAND34 },
+  { 13, { 8, 9 }, WIEGAND34 }
+};
 
 /*== Deklaracia premennych ==
  */
-OneWire dsButton[ 4 ] = {
-  OneWire( CITACKA1 ),
-  OneWire( CITACKA2 ),
-  OneWire( CITACKA3 ),
-  OneWire( CITACKA4 )
+
+OneWire citacka[] = {
+  OneWire( slot[0].citacka ),
+  OneWire( slot[1].citacka ),
+  OneWire( slot[2].citacka ),
+  OneWire( slot[3].citacka )
 };
 
-uint8_t addr[ 8 ] = {0};  // adresa + identifikator zariadenia - 8 bajtove pole
-uint32_t paket = 0;       // vystupny paket s Wiegand protokolom
-uint8_t citacka;          // aktivna citacka
+uint8_t unikatnyROMKod[ 8 ] = {0};  // adresa + identifikator zariadenia - 8 bajtove pole
+uint8_t pouzitySlot;                // aktivny slot         
 
-String keyStatus = "";
+enum vysledkyNacitania {
+  OK = 0,
+  CRC_INVALID,
+  NOT_DS1990A,
+  NO_IBUTTON
+} vysledokNacitania;
 
 /*== INICIALIZACIA ==
  *===================
  */
 void setup()
 {
+  #if DEBUG == 1
+    Serial.begin( 57600 );  // Inicializacia serioveho vystupu
+  #endif
+   
   // Nastavenie datovych pinov pre vystup Wiegand
-  for ( uint8_t i = W1_DATA0; i < ( POCET_CITACIEK * 2  + W1_DATA0); i++ ) {
-    pinMode( i, OUTPUT );
-    digitalWrite( i, HIGH );
+  for ( uint8_t i = 0; i < POCET_SLOTOV; i++ ) {
+    pinMode( slot[ i ].vystup[ 0 ], OUTPUT );
+    pinMode( slot[ i ].vystup[ 1 ], OUTPUT );
+    digitalWrite( slot[ i ].vystup[ 0 ], HIGH );
+    digitalWrite( slot[ i ].vystup[ 1 ], HIGH );
   }
 
-  Serial.begin( 57600 );  // Inicializacia serioveho vystupu
+  
   #if DEBUG == 1
     Serial.println( F( "Inicializacia ukoncena." ));
   #endif
-  delay (500);
+  delay ( 500 );
 }
 
 /*== HLAVNY PROGRAM ==
@@ -114,136 +115,46 @@ void setup()
  */
 void loop()
 {
-  for ( citacka = 0; citacka < POCET_CITACIEK; citacka++ ) {
-    
-    // Search for the next device. The addrArray is an 8 byte array.
-    // If a device is found, addrArray is filled with the device's 
-    // address and true is returned. If no more devices are found, false is returned. 
-    if ( !dsButton[ citacka ].search( addr )) {
-      dsButton[ citacka ].reset_search();  // Begin a new search. The next use of search will begin at the first device.
-      keyStatus = "No iButton";
+  for ( pouzitySlot = 0; pouzitySlot < POCET_SLOTOV; pouzitySlot++ ) {
+
+    /* Vyhladanie aktivneho kluca na citacke. Ak je kluc najdeny, pole unikatnyROMKod je naplnene
+     * jedinecnym cislom a metoda search vrati TRUE. Ak kluc nie je najdeny, metoda vrati FALSE.
+     */
+    if ( !( citacka[ pouzitySlot ].search( unikatnyROMKod ))) {
+      vysledokNacitania = NO_IBUTTON;
+      citacka[ pouzitySlot ].reset_search();  // Zacatie noveho vyhladavanie kluca. Dalsie pouzitie search vrati udaje o dalsom kluci.
       continue;
     }
-    
-    // Compute a CRC check on an array of data.
-    if ( OneWire::crc8( addr, 7 ) != addr[ 7 ]) {
-      keyStatus = "CRC invalid";
+
+    // Vypocet a kontrola CRC nad polom unikatnyROMKod.
+    if ( OneWire::crc8( unikatnyROMKod, 7 ) != unikatnyROMKod[ 7 ]) {
+      vysledokNacitania = CRC_INVALID;
       continue;
     }
-    
-    if ( addr[ 0 ] != 0x01 ) {
-      keyStatus = "not DS1990A";
+
+    if ( unikatnyROMKod[ 0 ] != DS1990A ) {
+      vysledokNacitania = NOT_DS1990A;
       continue;
     }
-    
-    keyStatus = "ok";
-    dsButton[ citacka ].reset();
-    
+
+    vysledokNacitania = OK;
+    citacka[ pouzitySlot ].reset();
+
     #if DEBUG == 1
       Serial.print( F( "CITACKA " ));
-      Serial.print( citacka + 1 );
-      Serial.print( F( " = " ));
+      Serial.print( pouzitySlot + 1 );
+      Serial.print( F( ": " ));
       for ( uint8_t i = 0; i < 8; i++ ) {
-        Serial.print( addr[i], HEX );
-        Serial.print( F( ":" ));
+        Serial.print( unikatnyROMKod[ i ], HEX );
+        Serial.print( F( " " ));
       }
       Serial.println(); 
     #endif
-    
-    vytvorTelo( &paket, addr );
 
-    posliKod( &paket, citacka );
-    paket = 0;
-    keyStatus =  "";
+    posliKod( unikatnyROMKod, slot[ pouzitySlot ].protokol, slot[ pouzitySlot ].vystup );
     
     // Nastavenie oneskorenie kvoli nechcenemu opakovanemu dotyku iButtona
     delay( 800 );
   }
-}
-
-/*== DEFINICIE FUNKCII ==
- *=======================
- */
-
-void vytvorTelo( uint32_t * paket, const uint8_t * addr )
-{
-  /* Vytvorenie paketu z hodnot ulozenych v poli addr
-   * Seriove cislo je ulozene v poli addr ale v pakete
-   * su ulozene len 3 byty - addr[1] - addr[3]
-   */
-  for ( uint8_t x = 1; x <= 3; x++ ) {
-    *paket |= ( uint32_t )addr[ x ] << ( 16 - 8 * ( x - 1 ));  // posun postupne o 16, 8 a 0 bitov
-  }
-  
-  #if DEBUG == 1
-    Serial.println( F( "KOD: " ));
-    Serial.println( *paket, BIN );
-    Serial.println( *paket, DEC );
-    Serial.println( *paket, HEX );
-  #endif
-  
-  // Uvolnenie 0. bitu pre ulozenie parity
-  *paket <<= 1;
-
-  // Spocitanie parity pre masku 1111111111110
-  // Neparny paritny bit je nastaveny na 1, ak je pocet jednotiek v datovom slove parny
-  *paket = *paket | ( ~countParity( *paket & 0x00001FFE ) & 1 );
-  
-  // Spocitanie parity pre masku 01111111111110000000000000
-  // Parny paritny bit je nastaveny na 1, ak je pocet jednotiek v datovom slove neparny
-  *paket = *paket | (( uint32_t )( countParity( *paket & 0x01FFE000 ) & 1 ) << 25 );
-  
-  #if DEBUG == 1
-    Serial.println( F( "PAKET S PARITOU: " ));
-    Serial.println( *paket, BIN );
-    Serial.println( *paket, DEC );
-    Serial.println( *paket, HEX );
-  #endif
-}
-
-uint8_t countParity( uint32_t n )
-{
-  n = (( n & 0xAAAAAAAA ) >> 1 ) + ( n & 0x55555555 );
-  n = (( n & 0x30C30C30 ) >> 4 ) + (( n & 0x0C30C30C ) >> 2 ) + ( n & 0xC30C30C3 );
-  return ( n % 63 );
-}
-
-void posliKod( uint32_t *paket, uint8_t vystup )
-{
-  // Vypocet indexu pola W_VYSTUPY podla citacky
-  vystup = vystup * 2;
-  
-  #if DEBUG == 1
-    Serial.println( F( "WIEGAND = " ));
-  #endif
-  
-  for ( short i = ( WIEGAND - 1 ); i >= 0; i-- ) {
-    if ( bitRead( *paket, i ) == 1 ) {
-      
-      #if DEBUG == 1
-        Serial.print( 1 );
-      #endif
-      
-      digitalWrite( W_VYSTUPY[ vystup + 1 ], LOW );
-      delayMicroseconds( 34 );
-      digitalWrite( W_VYSTUPY[ vystup + 1 ], HIGH);
-    }
-    else if ( bitRead( *paket, i ) == 0 ) {
-      
-      #if DEBUG == 1
-        Serial.print( 0 );
-      #endif
-      
-      digitalWrite( W_VYSTUPY[ vystup ], LOW);
-      delayMicroseconds( 35 );
-      digitalWrite( W_VYSTUPY[ vystup ], HIGH);
-    }
-    
-    delayMicroseconds( 1860 );
-  }
-  #if DEBUG == 1
-    Serial.println();
-    Serial.println();
-  #endif
 }
 
