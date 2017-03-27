@@ -94,7 +94,7 @@ void setup()
   #if DEBUG == 1
     Serial.begin( 57600 );  // Inicializacia serioveho vystupu
   #endif
-   
+
   // Nastavenie datovych pinov pre vystup Wiegand
   for ( uint8_t i = 0; i < POCET_SLOTOV; i++ ) {
     pinMode( slot[ i ].vystup[ 0 ], OUTPUT );
@@ -103,7 +103,6 @@ void setup()
     digitalWrite( slot[ i ].vystup[ 1 ], HIGH );
   }
 
-  
   #if DEBUG == 1
     Serial.println( F( "Inicializacia ukoncena." ));
   #endif
@@ -116,7 +115,6 @@ void setup()
 void loop()
 {
   for ( pouzitySlot = 0; pouzitySlot < POCET_SLOTOV; pouzitySlot++ ) {
-
     /* Vyhladanie aktivneho kluca na citacke. Ak je kluc najdeny, pole unikatnyROMKod je naplnene
      * jedinecnym cislom a metoda search vrati TRUE. Ak kluc nie je najdeny, metoda vrati FALSE.
      */
