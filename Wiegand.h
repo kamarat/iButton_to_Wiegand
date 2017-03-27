@@ -27,8 +27,8 @@ struct Paket {
 // Deklaracia funkcii
 extern void posliKod( uint8_t * k, uint8_t p, const uint8_t * v );
 
-uint8_t vypocitajParitu( uint32_t n );
-void vytvorPaket( uint8_t * k, uint8_t p, struct Paket & pkt );
-void posliBit( uint8_t vystup);
+static void vytvorPaket( uint8_t * k, uint8_t p, struct Paket & pkt );
+static uint8_t vypocitajParitu( uint32_t n );
+static void posliBit( uint8_t vystup);
 
 #endif  // #ifndef WIEGAND_H

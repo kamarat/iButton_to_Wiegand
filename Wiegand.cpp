@@ -10,10 +10,7 @@
  ******************************************************************************/
 void posliKod( uint8_t *k, uint8_t p, const uint8_t * v )
 {
-  struct Paket paket;
-  paket.paritaLSB = 0;
-  paket.data = 0;
-  paket.paritaMSB = 0;
+  struct Paket paket = { 0, 0, 0 };
   vytvorPaket( k, p, paket );
 
   #if DEBUG == 1
@@ -28,8 +25,9 @@ void posliKod( uint8_t *k, uint8_t p, const uint8_t * v )
   #endif
 
   posliBit( v[ paket.paritaMSB ]);
-  for ( int8_t i = ( p * 8 - 1 ); i >= 0; i-- )
-    posliBit(( paket.data >> i ) & 0x01 );
+  for ( int8_t i = ( p * 8 - 1 ); i >= 0; i-- ) {
+      posliBit( v[( paket.data >> i ) & 0x01 ]);
+  }
   posliBit( v[ paket.paritaLSB ]);
 }
 
@@ -41,7 +39,7 @@ void posliKod( uint8_t *k, uint8_t p, const uint8_t * v )
  *              [OUT] struct Paket * pkt - vytvorenie paketu protokolu
  *      Return: nič
  ******************************************************************************/
-void vytvorPaket( uint8_t *k, uint8_t p, struct Paket & pkt )
+static void vytvorPaket( uint8_t *k, uint8_t p, struct Paket & pkt )
 {
   switch ( p ) {
     case WIEGAND26: {
@@ -78,7 +76,7 @@ void vytvorPaket( uint8_t *k, uint8_t p, struct Paket & pkt )
  *   Parameter: [IN] uint32_t n - udp instance
  *      Return: uint8_t - pocet bitov s hodnotou 1
  ******************************************************************************/
-uint8_t vypocitajParitu( uint32_t n )
+static uint8_t vypocitajParitu( uint32_t n )
 {
   n = (( n & 0xAAAAAAAA ) >> 1 ) + ( n & 0x55555555 );
   n = (( n & 0x30C30C30 ) >> 4 ) + (( n & 0x0C30C30C ) >> 2 ) + ( n & 0xC30C30C3 );
@@ -91,11 +89,11 @@ uint8_t vypocitajParitu( uint32_t n )
  *   Parameter: [IN] uint8_t vystup - vystup DATA0 alebo DATA1
  *      Return: Nič
  ******************************************************************************/
-void posliBit( uint8_t vystup)
+static void posliBit( uint8_t vystup)
 {
   digitalWrite( vystup, LOW );
   delayMicroseconds( 34 );          // cas zotrvania v stave LOW - 50 us
-  digitalWrite( vystup + 1, HIGH );
-  delayMicroseconds( 1860 );        // prestavka medzi jednotlivymi bitmi - 2 s
+  digitalWrite( vystup, HIGH );
+  delayMicroseconds( 1000 );        // prestavka medzi jednotlivymi bitmi - 1000 us
 }
 
