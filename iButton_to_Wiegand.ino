@@ -8,6 +8,11 @@
  * @author: kamarat
  * @date:   marec 2016 - marec 2017
  * 
+ * @version: [3.0.0] - 2017-03-27
+ *    - Doplnenie protokolu Wiegand 34
+ *    - Spracovanie protokolu v oddelených súboroch
+ *    - Úprava identifikácie na základe tzv. Family Code
+ *    
  * @version: [2.1.0] - 2017-03-24
  * @version: [2.0.0] - 2017-03
  *
@@ -119,8 +124,9 @@ void loop()
      * jedinecnym cislom a metoda search vrati TRUE. Ak kluc nie je najdeny, metoda vrati FALSE.
      */
     if ( !( citacka[ pouzitySlot ].search( unikatnyROMKod ))) {
+      // Zacatie noveho vyhladavania kluca. Dalsie pouzitie search vrati udaje o dalsom kluci.
+      citacka[ pouzitySlot ].reset_search();
       vysledokNacitania = NO_IBUTTON;
-      citacka[ pouzitySlot ].reset_search();  // Zacatie noveho vyhladavanie kluca. Dalsie pouzitie search vrati udaje o dalsom kluci.
       continue;
     }
 
@@ -151,7 +157,7 @@ void loop()
 
     posliKod( unikatnyROMKod, slot[ pouzitySlot ].protokol, slot[ pouzitySlot ].vystup );
     
-    // Nastavenie oneskorenie kvoli nechcenemu opakovanemu dotyku iButtona
+    // Nastavenie oneskorenia kvoli nechcenemu opakovanemu dotyku iButtona
     delay( 800 );
   }
 }
