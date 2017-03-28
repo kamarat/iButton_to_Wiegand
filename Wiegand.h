@@ -9,6 +9,7 @@
 // Definicie protokolu
 const uint8_t WIEGAND26 = 3;  // pocet bajtov predstavujucich data
 const uint8_t WIEGAND34 = 4;
+const uint8_t WIEGAND42 = 5;
 
 // Struktura pre urcenie vtahu vstupov a vystupov
 struct Slot {
@@ -17,18 +18,20 @@ struct Slot {
   uint8_t protokol;
 };
 
-// Struktura protokolu Wiegand 26/34
+// Struktura paketu protokolu Wiegand 26/34/42
 struct Paket {
   uint8_t paritaMSB;
-  uint32_t data;
+  uint8_t *data;
   uint8_t paritaLSB;
 };
+
 
 // Deklaracia funkcii
 extern void posliKod( uint8_t * k, uint8_t p, const uint8_t * v );
 
-static void vytvorPaket( uint8_t * k, uint8_t p, struct Paket & pkt );
-static uint8_t vypocitajParitu( uint32_t n );
+static void vytvorPaket( uint8_t p, struct Paket & pkt );
+//static uint8_t vypocitajParitu( uint32_t n );
+static uint8_t vypocitajParitu( uint8_t n );
 static void posliBit( uint8_t vystup);
 
 #endif  // #ifndef WIEGAND_H
