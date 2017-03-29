@@ -50,6 +50,7 @@
  *=======================
  */
 #include <OneWire.h>
+#include "LowPower.h"
 #include "Wiegand.h"
 
 /*== GLOBALNE PREMENNE ==
@@ -119,6 +120,9 @@ void setup()
  */
 void loop()
 {
+  // Uspatie na 500 ms, nasledne prebudenie pomocou Watchdog casovaca
+  LowPower.powerDown( SLEEP_500MS, ADC_OFF, BOD_OFF );
+
   for ( pouzitySlot = 0; pouzitySlot < POCET_SLOTOV; pouzitySlot++ ) {
     /* Vyhladanie aktivneho kluca na citacke. Ak je kluc najdeny, pole unikatnyROMKod je naplnene
      * jedinecnym cislom a metoda search vrati TRUE. Ak kluc nie je najdeny, metoda vrati FALSE.
@@ -156,9 +160,6 @@ void loop()
     #endif
 
     posliKod( unikatnyROMKod, slot[ pouzitySlot ].protokol, slot[ pouzitySlot ].vystup );
-    
-    // Nastavenie oneskorenia kvoli nechcenemu opakovanemu dotyku iButtona
-    delay( 800 );
   }
 }
 
