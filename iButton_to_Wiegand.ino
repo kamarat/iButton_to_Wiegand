@@ -68,7 +68,7 @@ const struct Slot slot[] {
   { 10, { 2, 3 }, WIEGAND26 },
   { 11, { 4, 5 }, WIEGAND26 },
   { 12, { 6, 7 }, WIEGAND34 },
-  { 13, { 8, 9 }, WIEGAND34 }
+  { 13, { 8, 9 }, WIEGAND42 }
 };
 
 /*== Deklaracia premennych ==
