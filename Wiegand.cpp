@@ -10,7 +10,7 @@ uint8_t i;
  *              [IN] uint8_t v - pole vystupov
  *      Return: nič
  ******************************************************************************/
-void posliKod( uint8_t *k, uint8_t p, const uint8_t * v )
+void posliKod( const uint8_t *k, uint8_t p, const uint8_t * v )
 {
   struct Paket paket = { 0, k + 1, 0 };
   vytvorPaket( p, paket );
@@ -22,21 +22,20 @@ void posliKod( uint8_t *k, uint8_t p, const uint8_t * v )
     for ( i = 0; i < p; i++ )
       Serial.print( paket.data[ i ], HEX );
     Serial.println();
-    uint32_t dec = 0;
-    for ( i = 0; i < p; i++ )
-      dec |= paket.data[ i ] << ( 8 * ( p - 1 - i ));
-    Serial.println( dec );
+    //uint32_t dec = 0;
+    //for ( i = 0; i < p; i++ )
+    //  dec |= paket.data[ i ] << ( 8 * ( p - 1 - i ));
+    //Serial.println( dec );
     for ( i = 0; i < p; i++ )
       Serial.print( paket.data[ i ], BIN );
     Serial.println();
     Serial.print( F( "Paritny bit LSB: " ));
     Serial.println( paket.paritaLSB );
   #endif
-
   posliBit( v[ paket.paritaMSB ]);
     for ( i = 0; i < p; i++) {
       for ( int8_t b = 7; b >= 0; b-- ) {
-        posliBit( v[ paket.data[ i ] >> b ] & 0x01 );
+        posliBit( v[ ( paket.data[ i ] >> b ) & 0x01 ] );
       }
     }
   posliBit( v[ paket.paritaLSB ]);
@@ -73,6 +72,7 @@ static void vytvorPaket( uint8_t p, struct Paket & pkt )
     case WIEGAND42: {
       // Paritny bit nastaveny na 0
       pkt.paritaMSB = 0;
+      
       // Spocitanie parity pre vsetkych 40 bitov
       // Parny paritny bit je nastaveny na 1, ak je pocet jednotiek v datovom slove neparny
       for ( i = 0; i < p; i++ )
@@ -105,6 +105,8 @@ static uint8_t vypocitajParitu( uint8_t n )
 {
   n = (( n & 0xAA ) >> 1 ) + ( n & 0x55 );
   n = (( n & 0xC0 ) >> 6 ) + (( n & 0x30 ) >> 4 ) + (( n & 0x0C ) >> 2 ) + ( n & 0x03 );
+  //for ( uint8_t i = 0; i < 8; i++ )
+  //  parita += ( n >> i ) & 0x01;
   return n;
 }
 
