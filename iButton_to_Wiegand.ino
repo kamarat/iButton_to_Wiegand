@@ -6,7 +6,11 @@
  * Program nacita ID z iButtona a vytvori signal v protokole Wiegand
  *
  * @author: kamarat
- * @date:   marec 2016 - marec 2017
+ * @date:   marec 2016 - maj 2017
+ *
+ * @version: [3.0.1] - 2017-05-12
+ *    - Zmena zapojenia pinov
+ *    - Skratenie doby spanku
  *
  * @version: [3.0.0] - 2017-03-27
  *    - Doplnenie protokolu Wiegand 34
