@@ -7,12 +7,12 @@
  *
  * @author: kamarat
  * @date:   marec 2016 - marec 2017
- * 
+ *
  * @version: [3.0.0] - 2017-03-27
  *    - Doplnenie protokolu Wiegand 34
  *    - Spracovanie protokolu v oddelených súboroch
  *    - Úprava identifikácie na základe tzv. Family Code
- *    
+ *
  * @version: [2.1.0] - 2017-03-24
  * @version: [2.0.0] - 2017-03
  *
@@ -24,25 +24,24 @@
  *=====================
  *
  * ARDUINO --- PERIFERIE
- * A   0 -
  *
- * D  10 - kontakt TM citacky 1 iButton
- * D  11 - kontakt TM citacky 2 iButton
- * D  12 - kontakt TM citacky 3 iButton
- * D  13 - kontakt TM citacky 4 iButton
+ * D  2 - kontakt TM citacky 1 iButton
+ * D  5 - kontakt TM citacky 2 iButton
+ * D 10 - kontakt TM citacky 3 iButton
+ * D 13 - kontakt TM citacky 4 iButton
  *
- * D   2 - vystup Wiegand 1 DATA0
- * D   3 - vystup Wiegand 1 DATA1
- * D   4 - vystup Wiegand 2 DATA0
- * D   5 - vystup Wiegand 2 DATA1
- * D   6 - vystup Wiegand 3 DATA0
- * D   7 - vystup Wiegand 3 DATA1
- * D   8 - vystup Wiegand 4 DATA0
- * D   9 - vystup Wiegand 4 DATA1
+ * D  3 - vystup Wiegand 1 DATA0
+ * D  4 - vystup Wiegand 1 DATA1
+ * D  6 - vystup Wiegand 2 DATA0
+ * D  7 - vystup Wiegand 2 DATA1
+ * D  8 - vystup Wiegand 3 DATA0
+ * D  9 - vystup Wiegand 3 DATA1
+ * D 12 - vystup Wiegand 4 DATA0
+ * D 11 - vystup Wiegand 4 DATA1
  *
+ * Rezistor 2k2 - medzi D2 a 5V
+ * Rezistor 2k2 - medzi D5 a 5V
  * Rezistor 2k2 - medzi D10 a 5V
- * Rezistor 2k2 - medzi D11 a 5V
- * Rezistor 2k2 - medzi D12 a 5V
  * Rezistor 2k2 - medzi D13 a 5V
  */
 
@@ -66,10 +65,10 @@ const uint8_t POCET_SLOTOV = 4;
 
 // citacka, D0, D1, protokol
 const struct Slot slot[] {
-  { 10, { 2, 3 }, WIEGAND26 },
-  { 11, { 4, 5 }, WIEGAND26 },
-  { 12, { 6, 7 }, WIEGAND34 },
-  { 13, { 8, 9 }, WIEGAND42 }
+  {  2, {  3,  4 }, WIEGAND34 },
+  {  5, {  6,  7 }, WIEGAND34 },
+  { 10, {  8,  9 }, WIEGAND34 },
+  { 13, { 12, 11 }, WIEGAND34 }
 };
 
 /*== Deklaracia premennych ==
@@ -83,7 +82,7 @@ OneWire citacka[] = {
 };
 
 uint8_t unikatnyROMKod[ 8 ] = {0};  // adresa + identifikator zariadenia - 8 bajtove pole
-uint8_t pouzitySlot;                // aktivny slot         
+uint8_t pouzitySlot;                // aktivny slot
 
 enum vysledkyNacitania {
   OK = 0,
@@ -120,8 +119,8 @@ void setup()
  */
 void loop()
 {
-  // Uspatie na 500 ms, nasledne prebudenie pomocou Watchdog casovaca
-  LowPower.powerDown( SLEEP_500MS, ADC_OFF, BOD_OFF );
+  // Uspatie na 120 ms, nasledne prebudenie pomocou Watchdog casovaca
+  LowPower.powerDown( SLEEP_120MS, ADC_OFF, BOD_OFF );
 
   for ( pouzitySlot = 0; pouzitySlot < POCET_SLOTOV; pouzitySlot++ ) {
     /* Vyhladanie aktivneho kluca na citacke. Ak je kluc najdeny, pole unikatnyROMKod je naplnene
@@ -156,10 +155,9 @@ void loop()
         Serial.print( unikatnyROMKod[ i ], HEX );
         Serial.print( F( " " ));
       }
-      Serial.println(); 
+      Serial.println();
     #endif
 
     posliKod( unikatnyROMKod, slot[ pouzitySlot ].protokol, slot[ pouzitySlot ].vystup );
   }
 }
-
