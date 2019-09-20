@@ -15,6 +15,8 @@ Typy zmien
 
 
 ## [Unreleased]
+
+## [3.0.2] - 2019-09-20
 ### Added
 - Doplnenie súboru CHANGELOG.md
 ### Changed
