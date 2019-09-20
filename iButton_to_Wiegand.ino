@@ -6,17 +6,11 @@
  * Program nacita ID z iButtona a vytvori signal v protokole Wiegand
  *
  * @author: kamarat
- * @date:   marec 2016 - maj 2017
+ * @date:   marec 2016 - september 2019
  *
+ * @version: [3.0.2] - 2019-09-20
  * @version: [3.0.1] - 2017-05-12
- *    - Zmena zapojenia pinov
- *    - Skratenie doby spanku
- *
  * @version: [3.0.0] - 2017-03-27
- *    - Doplnenie protokolu Wiegand 34
- *    - Spracovanie protokolu v oddelených súboroch
- *    - Úprava identifikácie na základe tzv. Family Code
- *
  * @version: [2.1.0] - 2017-03-24
  * @version: [2.0.0] - 2017-03
  *
@@ -53,7 +47,7 @@
  *=======================
  */
 #include <OneWire.h>
-#include "LowPower.h"
+#include <LowPower.h>
 #include "Wiegand.h"
 
 /*== GLOBALNE PREMENNE ==
@@ -156,6 +150,8 @@ void loop()
       Serial.print( pouzitySlot + 1 );
       Serial.print( F( ": " ));
       for ( uint8_t i = 0; i < 8; i++ ) {
+        if ( unikatnyROMKod[ i ] < 0x10 )
+          Serial.print( "0" );
         Serial.print( unikatnyROMKod[ i ], HEX );
         Serial.print( F( " " ));
       }
