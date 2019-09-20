@@ -19,8 +19,11 @@ void posliKod( const uint8_t *k, uint8_t p, const uint8_t * v )
     Serial.print( F( "Paritny bit MSB: " ));
     Serial.println( paket.paritaMSB );
     Serial.println( F( "KOD: " ));
-    for ( i = 0; i < p; i++ )
+    for ( i = 0; i < p; i++ ) {
+      if ( paket.data[ i ] < 0x10 )
+        Serial.print( "0" );
       Serial.print( paket.data[ i ], HEX );
+    }
     Serial.println();
     //uint32_t dec = 0;
     //for ( i = 0; i < p; i++ )
@@ -123,4 +126,3 @@ static void posliBit( uint8_t vystup)
   digitalWrite( vystup, HIGH );
   delayMicroseconds( 1000 );        // prestavka medzi jednotlivymi bitmi - 1000 us
 }
-

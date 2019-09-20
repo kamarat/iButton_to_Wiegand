@@ -53,7 +53,7 @@
  *=======================
  */
 #include <OneWire.h>
-#include "LowPower.h"
+#include <LowPower.h>
 #include "Wiegand.h"
 
 /*== GLOBALNE PREMENNE ==
@@ -156,6 +156,8 @@ void loop()
       Serial.print( pouzitySlot + 1 );
       Serial.print( F( ": " ));
       for ( uint8_t i = 0; i < 8; i++ ) {
+        if ( unikatnyROMKod[ i ] < 0x10 )
+          Serial.print( "0" );
         Serial.print( unikatnyROMKod[ i ], HEX );
         Serial.print( F( " " ));
       }
